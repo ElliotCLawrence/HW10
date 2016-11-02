@@ -12,7 +12,6 @@ namespace CS422
 
         public BigNum(string number)
         {
-            
             char[] validStart = { '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' };
             if (number == null || number == "")
                 throw new Exception();
@@ -21,12 +20,30 @@ namespace CS422
             if (number.Contains(" ")) //check for white space
                 throw new Exception();
 
-            /*
-             * The only allowed characters are
-               ‘-‘ (at most 1 and only ever valid as the very first character)
-               ‘.’ (at most 1)
-               [0-9]
-            */
+            bool encounteredDecimal = false;
+
+            for (int x = 0; x < number.Length; x++)
+            {
+                if (number[x] == '-')
+                {
+                    if (x > 0) //if x is greater than 0, no '-' allowed.
+                        throw new Exception();
+                }
+                    
+                else if (number[x] == '.')
+                {
+                    if (encounteredDecimal == false) //first decimal is ok.
+                        encounteredDecimal = true;
+                    else                             //second decimal is not ok.
+                        throw new Exception();
+                }
+                 
+
+                else if (number[x] < '0' || number[x] > '9') //if it's not a '-' or '.' it must be 0-9 , if not, throw exception.
+                    throw new Exception();
+
+            }
+            //valid string.
 
             bigNum = number;
         }
