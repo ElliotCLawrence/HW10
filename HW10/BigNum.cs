@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace CS422
 {
     class BigNum
     {
-        private string bigNum;
+        
+        private BigInteger leftSide;
+        private BigInteger rightSide;
+
 
         public BigNum(string number)
         {
@@ -28,6 +32,7 @@ namespace CS422
                 {
                     if (x > 0) //if x is greater than 0, no '-' allowed.
                         throw new Exception();
+
                 }
                     
                 else if (number[x] == '.')
@@ -45,17 +50,60 @@ namespace CS422
             }
             //valid string.
 
-            bigNum = number;
+            string left = "";
+            string right = "";
+
+            if (!encounteredDecimal) //if no decimal.
+            {
+                leftSide = new BigInteger(long.Parse(number));
+                rightSide = new BigInteger(0.0);
+            }
+
+
+            else
+            {
+                int x = 0;
+                while (x < number.Length)
+                {
+                    if (number[x] == '.')
+                    {
+                        x++;
+                        break;
+                    }
+                    left += number[x];
+                    x++;
+                }
+
+                while (x < number.Length)
+                {
+                    right += number[x];
+                    x++;
+                }
+
+                if (right == "")
+                {
+                    right = "0";
+                }
+
+                leftSide = new BigInteger(long.Parse(left));
+                rightSide = new BigInteger(long.Parse(right));
+
+
+            }
         }
 
-        public BigNum(double value, bool useDoubleToString)
+        public BigNum(double value, bool useDoubleToString) //
         {
-
+            
         }
 
         public override string ToString()
         {
-            return base.ToString();
+            string returnStr = "";
+            returnStr += leftSide.ToString();
+            returnStr += ".";
+            returnStr += rightSide.ToString();
+            return returnStr;
         }
 
         public bool IsUndefined
@@ -103,6 +151,5 @@ namespace CS422
         {
             return true; //change this
         }
-
     }
 }
