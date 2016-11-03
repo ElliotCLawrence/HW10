@@ -10,9 +10,10 @@ namespace CS422
     class BigNum
     {
         
-        private BigInteger leftSide;
-        private BigInteger rightSide;
+        private BigInteger baseInt;
+        private BigInteger exponentInt;
 
+        
 
         public BigNum(string number)
         {
@@ -25,6 +26,7 @@ namespace CS422
                 throw new Exception();
 
             bool encounteredDecimal = false;
+            int decimalLocation = -1;
 
             for (int x = 0; x < number.Length; x++)
             {
@@ -38,7 +40,11 @@ namespace CS422
                 else if (number[x] == '.')
                 {
                     if (encounteredDecimal == false) //first decimal is ok.
+                    {
                         encounteredDecimal = true;
+                        decimalLocation = x;
+                    }
+                        
                     else                             //second decimal is not ok.
                         throw new Exception();
                 }
@@ -50,46 +56,29 @@ namespace CS422
             }
             //valid string.
 
-            string left = "";
-            string right = "";
 
-            if (!encounteredDecimal) //if no decimal.
+            string numberNoDecimal = "";
+            int x = 0;
+            while (x < number.Length)
             {
-                leftSide = new BigInteger(long.Parse(number));
-                rightSide = new BigInteger(0.0);
+                if (number[x] != '.')
+                    numberNoDecimal += number[x];
+                x++;
             }
 
-
-            else
+            if (!encounteredDecimal) //if no decimal
             {
-                int x = 0;
-                while (x < number.Length)
-                {
-                    if (number[x] == '.')
-                    {
-                        x++;
-                        break;
-                    }
-                    left += number[x];
-                    x++;
-                }
-
-                while (x < number.Length)
-                {
-                    right += number[x];
-                    x++;
-                }
-
-                if (right == "")
-                {
-                    right = "0";
-                }
-
-                leftSide = new BigInteger(long.Parse(left));
-                rightSide = new BigInteger(long.Parse(right));
-
-
+                baseInt = new BigInteger(long.Parse(numberNoDecimal));
+                exponentInt = new BigInteger(0);
             }
+
+            else //there was a decimal
+            {
+                baseInt = new BigInteger(long.Parse(numberNoDecimal));
+                exponentInt = new BigInteger((number.Length - decimalLocation) * -1);
+            }
+
+            
         }
 
         public BigNum(double value, bool useDoubleToString) //
@@ -99,11 +88,7 @@ namespace CS422
 
         public override string ToString()
         {
-            string returnStr = "";
-            returnStr += leftSide.ToString();
-            returnStr += ".";
-            returnStr += rightSide.ToString();
-            return returnStr;
+            return "";
         }
 
         public bool IsUndefined
