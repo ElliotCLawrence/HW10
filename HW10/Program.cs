@@ -12,14 +12,13 @@ namespace CS422
         {
             BigNum teddy = new BigNum(12345678912345678.123123123123, false);
             double dog = 12345678912345678.123123123123;
-            BigNum left = new BigNum("116.8410");
-            BigNum right = new BigNum("1.8410");
+            BigNum left = new BigNum(0116.8410,false);
+            BigNum right = new BigNum("123.123123123");
             BigNum negRight = new BigNum("-1.8410");
 
 
-            BigNum result = left - right ;
-            
-                Console.WriteLine(right.ToString());
+            BigNum result = left - right;
+                Console.WriteLine(result.ToString());
             //string temp = result.ToString();
         }
     }

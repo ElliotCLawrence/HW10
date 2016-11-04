@@ -141,7 +141,7 @@ namespace CS422
                 if (number[x] == '-')
                 {
                     if (x > 0) //if x is greater than 0, no '-' allowed.
-                        throw new Exception();
+                        throw new Exception("invalid '-' location");
                 }
 
                 else if (number[x] == '.')
@@ -153,7 +153,7 @@ namespace CS422
                     }
 
                     else                             //second decimal is not ok.
-                        throw new Exception();
+                        throw new Exception("multiple decimals detected");
                 }
 
                 else if (number[x] < '0' || number[x] > '9') //if it's not a '-' or '.' it must be 0-9 , if not, throw exception.
