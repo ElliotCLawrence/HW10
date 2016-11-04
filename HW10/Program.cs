@@ -11,11 +11,15 @@ namespace CS422
         static void Main(string[] args)
         {
             BigNum teddy = new BigNum(12345678912345678.123123123123, false);
-            BigNum left = new BigNum("100.5");
-            BigNum right = new BigNum("100.4999");
-            //BigNum result = left / right;
-            if (right <= left)
-                Console.WriteLine("left Greater");
+            double dog = 12345678912345678.123123123123;
+            BigNum left = new BigNum("116.8410");
+            BigNum right = new BigNum("-1.8410");
+            BigNum negRight = new BigNum("-1.8410");
+
+
+            BigNum result = left - right ;
+            
+                Console.WriteLine(result.ToString());
             //string temp = result.ToString();
         }
     }

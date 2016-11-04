@@ -1,4 +1,9 @@
-﻿using System;
+﻿//Elliot Lawrence
+//ID11349302
+//HW10
+//CS422
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -53,11 +58,8 @@ namespace CS422
 
             else //Cannot use double.tostring()
             {
-                
-
                 byte[] byteArray = BitConverter.GetBytes(value);
                 var bits = new BitArray(byteArray);
-                
                 
                 for (int x = 0; x < 32; x ++) //bit array needs to be reversed on windows.
                 {
@@ -121,7 +123,6 @@ namespace CS422
         {
             isUndefined = false; //if we're here, you can assume the BigNum is defined.
 
-            
             int x = 0;
             char[] validStart = { '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' };
             if (number == null || number == "")
@@ -157,7 +158,6 @@ namespace CS422
 
                 else if (number[x] < '0' || number[x] > '9') //if it's not a '-' or '.' it must be 0-9 , if not, throw exception.
                     throw new Exception();
-
             }
             //valid string.
 
@@ -205,6 +205,8 @@ namespace CS422
 
             else //there was a decimal
             {
+                if (isNegative)
+                    decimalLocation--;
                 exponent = ((numberNoDecimal.Length - decimalLocation) * -1);
             }
         }
@@ -231,7 +233,7 @@ namespace CS422
                 if (onlyZero)
                     return "0";
                 
-                if ((exponent*-1) > number.Length) //need frontward 0s
+                if ((exponent*-1) > number.Length) //need pre-pending 0s if the number is just a decimal
                 {
                     while ((exponent*-1) > number.Length)
                     {
@@ -245,12 +247,12 @@ namespace CS422
                 }
                 
 
-                if (number[0] == '0')
+                if (number[0] == '0') //if it starts with a 0, add a 0. to the beginning
                     number = number.Insert(0, "0.");
-                else if (number[0] == '.')
+                else if (number[0] == '.') //if it starts with a '.' add a 0 preceding the number.
                     number = number.Insert(0, "0");
 
-                if (isNegative)
+                if (isNegative) //if it's negative add a negative sign to it
                     number = number.Insert(0, "-");
 
 
@@ -284,20 +286,23 @@ namespace CS422
 
         public static BigNum operator + (BigNum lhs, BigNum rhs)
         {
+            if (rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
+                return new BigNum(Double.NaN, false);
+
             if (lhs.isNegative)                  //get negatives
                 lhs.baseInt = lhs.baseInt * -1;
             if (rhs.isNegative)
                 rhs.baseInt = rhs.baseInt * -1;
 
-            while (lhs.exponent > rhs.exponent)  //get same exponents
-            {
-                rhs.baseInt *= 10;
-                lhs.exponent -= 1;
-            }
-            while (rhs.exponent < lhs.exponent)
+            while (lhs.exponent > rhs.exponent) //get them to the same ammount of digits
             {
                 lhs.baseInt *= 10;
-                rhs.exponent -= 1;
+                lhs.exponent--;
+            }
+            while (lhs.exponent < rhs.exponent)
+            {
+                rhs.baseInt *= 10;
+                rhs.exponent--;
             }
 
             BigInteger newBase = lhs.baseInt + rhs.baseInt;
@@ -307,20 +312,23 @@ namespace CS422
 
         public static BigNum operator - (BigNum lhs, BigNum rhs)
         {
+            if (rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
+                return new BigNum(Double.NaN, false);
+
             if (lhs.isNegative)                 //get negatives
                 lhs.baseInt = lhs.baseInt * -1;
             if (rhs.isNegative)
                 rhs.baseInt = rhs.baseInt * -1;
 
-            while (lhs.exponent > rhs.exponent) //get same exponents
-            {
-                rhs.baseInt *= 10;
-                lhs.exponent -= 1;
-            }
-            while (rhs.exponent < lhs.exponent)
+            while (lhs.exponent > rhs.exponent) //get them to the same ammount of digits
             {
                 lhs.baseInt *= 10;
-                rhs.exponent -= 1;
+                lhs.exponent--;
+            }
+            while (lhs.exponent < rhs.exponent)
+            {
+                rhs.baseInt *= 10;
+                rhs.exponent--;
             }
 
             BigInteger newBase = lhs.baseInt - rhs.baseInt;
@@ -330,6 +338,9 @@ namespace CS422
 
         public static BigNum operator * (BigNum lhs, BigNum rhs)
         {
+            if (rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
+                return new BigNum(Double.NaN, false);
+
             if (lhs.isNegative) //get negatives
                 lhs.baseInt = lhs.baseInt * -1;
             if (rhs.isNegative)
@@ -462,6 +473,7 @@ namespace CS422
 
             return false; //else return false
         }
+
         public static bool operator <(BigNum lhs, BigNum rhs)
         {
             if (lhs.isNegative && !rhs.isNegative) //if left hand side is negative, and right isn't, return false
@@ -505,6 +517,7 @@ namespace CS422
             return false; //else return false
 
         }
+
         public static bool operator <=(BigNum lhs, BigNum rhs)
         {
             if (lhs.isNegative && !rhs.isNegative) //if left hand side is negative, and right isn't, return false
