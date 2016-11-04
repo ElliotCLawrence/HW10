@@ -197,6 +197,8 @@ namespace CS422
                 multiplyCoEfficient *= 10;
             }
 
+            baseInt = BigInteger.Abs(baseInt);
+
 
             if (!encounteredDecimal) //if no decimal
             {
@@ -209,6 +211,8 @@ namespace CS422
                     decimalLocation--;
                 exponent = ((numberNoDecimal.Length - decimalLocation) * -1);
             }
+
+
         }
 
         public override string ToString() //assumes that the base number + 1 is less than integer maximum characters.
@@ -289,25 +293,32 @@ namespace CS422
             if (rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
                 return new BigNum(Double.NaN, false);
 
-            if (lhs.isNegative)                  //get negatives
-                lhs.baseInt = lhs.baseInt * -1;
+            BigInteger lhsBase = lhs.baseInt;
+            BigInteger rhsBase = rhs.baseInt;
+            int lhsExp = lhs.exponent;
+            int rhsExp = rhs.exponent;
+
+
+            if (lhs.isNegative)                 //get negatives
+                lhsBase = lhs.baseInt * -1;
             if (rhs.isNegative)
-                rhs.baseInt = rhs.baseInt * -1;
+                rhsBase = rhs.baseInt * -1;
 
-            while (lhs.exponent > rhs.exponent) //get them to the same ammount of digits
+            while (lhsExp > rhsExp) //get them to the same ammount of digits
             {
-                lhs.baseInt *= 10;
-                lhs.exponent--;
+                lhsBase *= 10;
+                lhsExp--;
             }
-            while (lhs.exponent < rhs.exponent)
+            while (lhsExp < rhsExp)
             {
-                rhs.baseInt *= 10;
-                rhs.exponent--;
+                rhsBase *= 10;
+                rhsExp--;
             }
 
-            BigInteger newBase = lhs.baseInt + rhs.baseInt;
+            BigInteger newBase = lhsBase + rhsBase;
 
-            return new BigNum(newBase, lhs.exponent);
+
+            return new BigNum(newBase, lhsExp);
         }
 
         public static BigNum operator - (BigNum lhs, BigNum rhs)
@@ -315,25 +326,32 @@ namespace CS422
             if (rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
                 return new BigNum(Double.NaN, false);
 
+            BigInteger lhsBase = lhs.baseInt;
+            BigInteger rhsBase = rhs.baseInt;
+            int lhsExp = lhs.exponent;
+            int rhsExp = rhs.exponent;
+
+
             if (lhs.isNegative)                 //get negatives
-                lhs.baseInt = lhs.baseInt * -1;
+                lhsBase = lhs.baseInt * -1;
             if (rhs.isNegative)
-                rhs.baseInt = rhs.baseInt * -1;
+                rhsBase = rhs.baseInt * -1;
 
-            while (lhs.exponent > rhs.exponent) //get them to the same ammount of digits
+            while (lhsExp > rhsExp) //get them to the same ammount of digits
             {
-                lhs.baseInt *= 10;
-                lhs.exponent--;
+                lhsBase *= 10;
+                lhsExp--;
             }
-            while (lhs.exponent < rhs.exponent)
+            while (lhsExp < rhsExp)
             {
-                rhs.baseInt *= 10;
-                rhs.exponent--;
+                rhsBase *= 10;
+                rhsExp--;
             }
 
-            BigInteger newBase = lhs.baseInt - rhs.baseInt;
+            BigInteger newBase = lhsBase - rhsBase;
 
-            return new BigNum(newBase, lhs.exponent);
+
+            return new BigNum(newBase, lhsExp);
         }
 
         public static BigNum operator * (BigNum lhs, BigNum rhs)
@@ -341,13 +359,18 @@ namespace CS422
             if (rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
                 return new BigNum(Double.NaN, false);
 
-            if (lhs.isNegative) //get negatives
-                lhs.baseInt = lhs.baseInt * -1;
-            if (rhs.isNegative)
-                rhs.baseInt = rhs.baseInt * -1;
+            BigInteger lhsBase = lhs.baseInt;
+            BigInteger rhsBase = rhs.baseInt;
+            int lhsExp = lhs.exponent;
+            int rhsExp = rhs.exponent;
 
-            BigInteger baseInt = lhs.baseInt * rhs.baseInt;
-            int exp = lhs.exponent + rhs.exponent;
+            if (lhs.isNegative) //get negatives
+                lhsBase = lhs.baseInt * -1;
+            if (rhs.isNegative)
+                rhsBase = rhs.baseInt * -1;
+
+            BigInteger baseInt = lhsBase * rhsBase;
+            int exp = lhsExp + rhsExp;
 
             return new BigNum(baseInt, exp);
         }
@@ -357,17 +380,22 @@ namespace CS422
             if (rhs.baseInt == 0 || rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
                 return new BigNum(Double.NaN, false);
 
-            if (lhs.isNegative)
-                lhs.baseInt = lhs.baseInt * -1;
+            BigInteger lhsBase = lhs.baseInt;
+            BigInteger rhsBase = rhs.baseInt;
+            int lhsExp = lhs.exponent;
+            int rhsExp = rhs.exponent;
+
+            if (lhs.isNegative) //get negatives
+                lhsBase = lhs.baseInt * -1;
             if (rhs.isNegative)
-                rhs.baseInt = rhs.baseInt * -1;
+                rhsBase = rhs.baseInt * -1;
 
             for (int x = 0; x < 30; x++) //precise up to 30 digits
-                lhs.baseInt *= 10;
+                lhsBase *= 10;
 
-            BigInteger newNumerator = lhs.baseInt / rhs.baseInt;
+            BigInteger newNumerator = lhsBase / rhsBase;
 
-            int newExponent = lhs.exponent - rhs.exponent;
+            int newExponent = lhsExp - rhsExp;
 
             newExponent -= 30; //bring out the 30 powers
 
