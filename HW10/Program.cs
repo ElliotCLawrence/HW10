@@ -10,7 +10,9 @@ namespace CS422
     {
         static void Main(string[] args)
         {
-            BigNum teddy = new BigNum(4.999, false);
+            BigNum teddy = new BigNum(-.00123, false);
+            string temp = teddy.ToString();
+            int x = 0;
         }
     }
 }

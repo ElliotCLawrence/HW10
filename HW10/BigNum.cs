@@ -100,7 +100,6 @@ namespace CS422
 
                  actualNum += (dec * (decimal)Math.Pow(2, localexponent)).ToString();
 
-
                 initializeWithString(actualNum);
             }
         }
@@ -151,11 +150,23 @@ namespace CS422
             x = 0;
 
             string numberNoDecimal = "";
+            isNegative = false;
 
             while (x < number.Length)
             {
-                if (number[x] != '.')
-                    numberNoDecimal += number[x];
+                if (number[x] == '.')
+                {
+                    x++;
+                    continue;
+                }
+                   
+                else if (number[x] == '-')
+                {
+                    x++;
+                    isNegative = true;
+                }
+
+                numberNoDecimal += number[x];
                 x++;
             }
 
@@ -167,7 +178,7 @@ namespace CS422
 
             for (x = numberNoDecimal.Length -1; x >= 0; x--)
             {
-                multiplyCoEfficient += (numberNoDecimal[x] - '0') * multiplyCoEfficient;
+                baseInt += (numberNoDecimal[x] - '0') * multiplyCoEfficient;
                 multiplyCoEfficient *= 10;
             }
 
@@ -179,20 +190,68 @@ namespace CS422
 
             else //there was a decimal
             {
-                exponent = ((numberNoDecimal.Length - decimalLocation) * -1);
+                exponent = ((numberNoDecimal.Length - decimalLocation + 1) * -1);
             }
         }
 
-        public override string ToString()
+        public override string ToString() //assumes that the base number + 1 is less than integer maximum characters.
         {
-            string number = baseInt.ToString();
-
-            if (exponent != 0)
+            try
             {
-                number.Insert((number.Length - 1) -  exponent, ",");
+                string number = baseInt.ToString();
+
+
+
+                if ((exponent*-1) > number.Length) //need frontward 0s
+                {
+                    while ((exponent*-1) > number.Length)
+                    {
+                        number = number.Insert(0, "0");
+                    }
+                }
+
+                if (exponent != 0)
+                {
+                    number = number.Insert((number.Length) + exponent, "."); //exponent will always be <= 0
+                }
+                else
+                {
+                    number += ".0";
+                }
+
+
+
+
+
+                if (number[0] == '0')
+                    number = number.Insert(0, "0.");
+                else if (number[0] == '.')
+                    number = number.Insert(0, "0");
+
+
+
+                if (isNegative)
+                    number = number.Insert(0, "-");
+
+
+                if (number.Contains(".")) //trim trailing 0s
+                {
+                    int x = number.Length;
+
+                    while (number[x - 1] == '0')
+                    {
+                        x--;
+                        number = number.Remove(x);
+                    }
+                }
+
+                return number;
             }
 
-            return number;
+            catch //if bigInt is larger than int max characters after tostring() it will fail.
+            {
+                throw new Exception("Base int too large to convert to string");
+            }
         }
 
         public bool IsUndefined
