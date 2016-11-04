@@ -36,16 +36,15 @@ namespace CS422
 
         public BigNum(double value, bool useDoubleToString) 
         {
-            if (Double.IsNaN(value))
+            if (Double.IsNaN(value) || Double.IsInfinity(value) || Double.IsNegativeInfinity(value))
             {
-
                 baseInt = new BigInteger();
                 exponent = 0;
-
                 isUndefined = true;
-
                 return;
             }
+
+            
             if (useDoubleToString)
             {
                 string number = value.ToString();
@@ -54,6 +53,8 @@ namespace CS422
 
             else //Cannot use double.tostring()
             {
+                
+
                 byte[] byteArray = BitConverter.GetBytes(value);
                 var bits = new BitArray(byteArray);
                 
@@ -342,7 +343,7 @@ namespace CS422
 
         public static BigNum operator /(BigNum lhs, BigNum rhs)
         {
-            if (rhs.baseInt == 0) //cannot divide by 0
+            if (rhs.baseInt == 0 || rhs.isUndefined || lhs.isUndefined) //cannot divide by 0
                 return new BigNum(Double.NaN, false);
 
             if (lhs.isNegative)
