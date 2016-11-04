@@ -21,8 +21,31 @@ namespace CS422
             initializeWithString(number);
         }
 
-        public BigNum(double value, bool useDoubleToString) //
+        private BigNum(BigInteger baseInteger, int exponentValue) //private constructor , helps in other functions
         {
+            baseInt = BigInteger.Abs(baseInteger);
+            exponent = exponentValue;
+
+            if (baseInteger > 0)
+                isNegative = false;
+            else
+                isNegative = true;
+
+            isUndefined = false;
+        }
+
+        public BigNum(double value, bool useDoubleToString) 
+        {
+            if (Double.IsNaN(value))
+            {
+
+                baseInt = new BigInteger();
+                exponent = 0;
+
+                isUndefined = true;
+
+                return;
+            }
             if (useDoubleToString)
             {
                 string number = value.ToString();
@@ -31,17 +54,6 @@ namespace CS422
 
             else //Cannot use double.tostring()
             {
-                if (Double.IsNaN(value))
-                {
-                    baseInt = new BigInteger();
-                    exponent = 0;
-
-                    isUndefined = true;
-
-                    return;
-                }
-
-               
                 byte[] byteArray = BitConverter.GetBytes(value);
                 var bits = new BitArray(byteArray);
                 
@@ -108,7 +120,7 @@ namespace CS422
         {
             isUndefined = false; //if we're here, you can assume the BigNum is defined.
 
-
+            
             int x = 0;
             char[] validStart = { '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' };
             if (number == null || number == "")
@@ -121,6 +133,7 @@ namespace CS422
             bool encounteredDecimal = false;
             int decimalLocation = -1;
 
+            
             for (x = 0; x < number.Length; x++)
             {
                 if (number[x] == '-')
@@ -164,6 +177,7 @@ namespace CS422
                 {
                     x++;
                     isNegative = true;
+                    continue;
                 }
 
                 numberNoDecimal += number[x];
@@ -190,7 +204,7 @@ namespace CS422
 
             else //there was a decimal
             {
-                exponent = ((numberNoDecimal.Length - decimalLocation + 1) * -1);
+                exponent = ((numberNoDecimal.Length - decimalLocation) * -1);
             }
         }
 
@@ -198,10 +212,24 @@ namespace CS422
         {
             try
             {
+                if (this.isUndefined)
+                    return "undefined";
+
                 string number = baseInt.ToString();
+                bool onlyZero = true;
 
+                for (int x = 0; x < number.Length; x++)
+                {
+                    if (number[x] != '0' && number[x] != '.')
+                    {
+                        onlyZero = false;
+                        break;
+                    }
+                }
 
-
+                if (onlyZero)
+                    return "0";
+                
                 if ((exponent*-1) > number.Length) //need frontward 0s
                 {
                     while ((exponent*-1) > number.Length)
@@ -214,21 +242,12 @@ namespace CS422
                 {
                     number = number.Insert((number.Length) + exponent, "."); //exponent will always be <= 0
                 }
-                else
-                {
-                    number += ".0";
-                }
-
-
-
-
+                
 
                 if (number[0] == '0')
                     number = number.Insert(0, "0.");
                 else if (number[0] == '.')
                     number = number.Insert(0, "0");
-
-
 
                 if (isNegative)
                     number = number.Insert(0, "-");
@@ -242,7 +261,7 @@ namespace CS422
                     {
                         x--;
                         number = number.Remove(x);
-                    }
+                    }                  
                 }
 
                 return number;
@@ -264,40 +283,275 @@ namespace CS422
 
         public static BigNum operator + (BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (lhs.isNegative)                  //get negatives
+                lhs.baseInt = lhs.baseInt * -1;
+            if (rhs.isNegative)
+                rhs.baseInt = rhs.baseInt * -1;
+
+            while (lhs.exponent > rhs.exponent)  //get same exponents
+            {
+                rhs.baseInt *= 10;
+                lhs.exponent -= 1;
+            }
+            while (rhs.exponent < lhs.exponent)
+            {
+                lhs.baseInt *= 10;
+                rhs.exponent -= 1;
+            }
+
+            BigInteger newBase = lhs.baseInt + rhs.baseInt;
+
+            return new BigNum(newBase, lhs.exponent);
         }
+
         public static BigNum operator - (BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (lhs.isNegative)                 //get negatives
+                lhs.baseInt = lhs.baseInt * -1;
+            if (rhs.isNegative)
+                rhs.baseInt = rhs.baseInt * -1;
+
+            while (lhs.exponent > rhs.exponent) //get same exponents
+            {
+                rhs.baseInt *= 10;
+                lhs.exponent -= 1;
+            }
+            while (rhs.exponent < lhs.exponent)
+            {
+                lhs.baseInt *= 10;
+                rhs.exponent -= 1;
+            }
+
+            BigInteger newBase = lhs.baseInt - rhs.baseInt;
+
+            return new BigNum(newBase, lhs.exponent);
         }
+
         public static BigNum operator * (BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (lhs.isNegative) //get negatives
+                lhs.baseInt = lhs.baseInt * -1;
+            if (rhs.isNegative)
+                rhs.baseInt = rhs.baseInt * -1;
+
+            BigInteger baseInt = lhs.baseInt * rhs.baseInt;
+            int exp = lhs.exponent + rhs.exponent;
+
+            return new BigNum(baseInt, exp);
         }
+
         public static BigNum operator /(BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (rhs.baseInt == 0) //cannot divide by 0
+                return new BigNum(Double.NaN, false);
+
+            if (lhs.isNegative)
+                lhs.baseInt = lhs.baseInt * -1;
+            if (rhs.isNegative)
+                rhs.baseInt = rhs.baseInt * -1;
+
+            for (int x = 0; x < 30; x++) //precise up to 30 digits
+                lhs.baseInt *= 10;
+
+            BigInteger newNumerator = lhs.baseInt / rhs.baseInt;
+
+            int newExponent = lhs.exponent - rhs.exponent;
+
+            newExponent -= 30; //bring out the 30 powers
+
+            return new BigNum(newNumerator, newExponent);
         }
-        public static BigNum operator >(BigNum lhs, BigNum rhs)
+
+        private static BigInteger calculateMask(BigInteger exp)
         {
-            return new BigNum("dog");
+            BigInteger mask = 1;
+
+            while (exp < 0) //up the mask to equal 10 ^ exp
+            {
+                mask *= 10;
+                exp++;
+            }
+
+            return mask;
         }
-        public static BigNum operator >=(BigNum lhs, BigNum rhs)
+
+        public static bool operator >(BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (lhs.isNegative && !rhs.isNegative) //if left hand side is negative, and right isn't, return false
+                return false;
+
+            if (!lhs.isNegative && rhs.isNegative) //if right hand side is negative, and left isn't, return true
+                return true;
+
+            BigInteger lhsMask = calculateMask(lhs.exponent);
+            BigInteger rhsMask = calculateMask(rhs.exponent);
+
+            BigInteger lhsDecimal;
+            BigInteger rhsDecimal;
+
+            int leftExp = lhs.exponent;
+            int rightExp = rhs.exponent;
+
+            if ((lhs.baseInt / lhsMask) > (rhs.baseInt / rhsMask))
+                return true;
+
+            if ((lhs.baseInt / lhsMask) == (rhs.baseInt / rhsMask)) //if the left hand side of the decimal is greater or equal on the left operand, return true
+            {
+                lhsDecimal = lhs.baseInt % lhsMask;
+                rhsDecimal = rhs.baseInt % rhsMask;
+
+                while (leftExp > rightExp) //get them to the same ammount of digits
+                {
+                    lhsDecimal *= 10;
+                    leftExp--;
+                }
+                while (leftExp < rightExp)
+                {
+                    rhsDecimal *= 10;
+                    rightExp--;
+                }
+
+                if (lhsDecimal > rhsDecimal)
+                    return true;
+            }
+
+            return false; //else return false
         }
-        public static BigNum operator <(BigNum lhs, BigNum rhs)
+
+
+        public static bool operator >= (BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (lhs.isNegative && !rhs.isNegative) //if left hand side is negative, and right isn't, return false
+                return false;
+
+            if (!lhs.isNegative && rhs.isNegative) //if right hand side is negative, and left isn't, return true
+                return true;
+
+            BigInteger lhsMask = calculateMask(lhs.exponent);
+            BigInteger rhsMask = calculateMask(rhs.exponent);
+
+            BigInteger lhsDecimal;
+            BigInteger rhsDecimal;
+
+            int leftExp = lhs.exponent;
+            int rightExp = rhs.exponent;
+
+            if ((lhs.baseInt / lhsMask) > (rhs.baseInt / rhsMask))
+                return true;
+
+            if ((lhs.baseInt / lhsMask) == (rhs.baseInt / rhsMask)) //if the left hand side of the decimal is greater or equal on the left operand, return true
+            {
+                lhsDecimal = lhs.baseInt % lhsMask;
+                rhsDecimal = rhs.baseInt % rhsMask;
+
+                while (leftExp > rightExp) //get them to the same ammount of digits
+                {
+                    lhsDecimal *= 10;
+                    leftExp--;
+                }
+                while (leftExp < rightExp)
+                {
+                    rhsDecimal *= 10;
+                    rightExp--;
+                }
+
+                if (lhsDecimal >= rhsDecimal)
+                    return true;
+            }
+
+            return false; //else return false
         }
-        public static BigNum operator <=(BigNum lhs, BigNum rhs)
+        public static bool operator <(BigNum lhs, BigNum rhs)
         {
-            return new BigNum("dog");
+            if (lhs.isNegative && !rhs.isNegative) //if left hand side is negative, and right isn't, return false
+                return false;
+
+            if (!lhs.isNegative && rhs.isNegative) //if right hand side is negative, and left isn't, return true
+                return true;
+
+            BigInteger lhsMask = calculateMask(lhs.exponent);
+            BigInteger rhsMask = calculateMask(rhs.exponent);
+
+            BigInteger lhsDecimal;
+            BigInteger rhsDecimal;
+
+            int leftExp = lhs.exponent;
+            int rightExp = rhs.exponent;
+
+            if ((lhs.baseInt / lhsMask) < (rhs.baseInt / rhsMask))
+                return true;
+
+            if ((lhs.baseInt / lhsMask) == (rhs.baseInt / rhsMask)) //if the left hand side of the decimal is greater or equal on the left operand, return true
+            {
+                lhsDecimal = lhs.baseInt % lhsMask;
+                rhsDecimal = rhs.baseInt % rhsMask;
+
+                while (leftExp > rightExp) //get them to the same ammount of digits
+                {
+                    lhsDecimal *= 10;
+                    leftExp--;
+                }
+                while (leftExp < rightExp)
+                {
+                    rhsDecimal *= 10;
+                    rightExp--;
+                }
+
+                if (lhsDecimal < rhsDecimal)
+                    return true;
+            }
+
+            return false; //else return false
+
+        }
+        public static bool operator <=(BigNum lhs, BigNum rhs)
+        {
+            if (lhs.isNegative && !rhs.isNegative) //if left hand side is negative, and right isn't, return false
+                return false;
+
+            if (!lhs.isNegative && rhs.isNegative) //if right hand side is negative, and left isn't, return true
+                return true;
+
+            BigInteger lhsMask = calculateMask(lhs.exponent);
+            BigInteger rhsMask = calculateMask(rhs.exponent);
+
+            BigInteger lhsDecimal;
+            BigInteger rhsDecimal;
+
+            int leftExp = lhs.exponent;
+            int rightExp = rhs.exponent;
+
+            if ((lhs.baseInt / lhsMask) > (rhs.baseInt / rhsMask))
+                return true;
+
+            if ((lhs.baseInt / lhsMask) == (rhs.baseInt / rhsMask)) //if the left hand side of the decimal is greater or equal on the left operand, return true
+            {
+                lhsDecimal = lhs.baseInt % lhsMask;
+                rhsDecimal = rhs.baseInt % rhsMask;
+
+                while (leftExp > rightExp) //get them to the same ammount of digits
+                {
+                    lhsDecimal *= 10;
+                    leftExp--;
+                }
+                while (leftExp < rightExp)
+                {
+                    rhsDecimal *= 10;
+                    rightExp--;
+                }
+
+                if (lhsDecimal <= rhsDecimal)
+                    return true;
+            }
+
+            return false; //else return false
         }
 
         public static bool IsToStringCorrect(double value)
         {
-            return true; //change this
+            if (value.ToString() == ((new BigNum(value, false)).ToString()))
+                return true;
+            return false;
         }
     }
 }
